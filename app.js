@@ -89,6 +89,100 @@ app.post('/union', async (req, res) => {
     }
 });
 
+app.post('/farmer', async (req, res) => {
+    try {
+        const { union_id } = req.body;
+        const board = await supabase.any(`select "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
+                                          from "Farmer" as F, "User" as U  
+                                          where F."id" = U."id"
+                                          and U."unionId" = $1`, [union_id]);
+        res.status(200).json(board);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post('/sme', async (req, res) => {
+    try {
+        const { union_id } = req.body;
+        const board = await supabase.any(`select "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
+                                          from "Sme" as S, "User" as U  
+                                          where S."id" = U."id"
+                                          and U."unionId" = $1`, [union_id]);
+        res.status(200).json(board);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post('/vendor', async (req, res) => {
+    try {
+        const { union_id } = req.body;
+        const board = await supabase.any(`select "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
+                                          from "Vendor" as V, "User" as U  
+                                          where V."id" = U."id"
+                                          and U."unionId" = $1`, [union_id]);
+        res.status(200).json(board);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post('/user-rank', async (req, res) => {
+    try {
+        const { user_id, account_type, union_id } = req.body;
+        if(account_type == "farmer") {
+            const self = await supabase.any(`select "name", "points", "rank" 
+                                            from (select "name", F."id", "points", Rank() over (order by "points" desc) as rank
+                                            from "Farmer" as F, "User" as U  
+                                            where F."id" = U."id"
+                                            and U."unionId" = $1) as P 
+                                            where "id" = $2`, [union_id, user_id]);
+            res.status(200).json(self);
+        }
+        else if(account_type == "sme") {
+            const self = await supabase.any(`select "name", "points", "rank" 
+                                            from (select "name", S."id", "points", Rank() over (order by "points" desc) as rank
+                                            from "Sme" as S, "User" as U  
+                                            where S."id" = U."id"
+                                            and U."unionId" = $1) as P 
+                                            where "id" = $2`, [union_id, user_id]);
+            res.status(200).json(self);
+        }
+        else if(account_type == "vendor") {
+            const self = await supabase.any(`select "name", "points", "rank" 
+                                            from (select "name", V."id", "points", Rank() over (order by "points" desc) as rank
+                                            from "Vendor" as V, "User" as U  
+                                            where V."id" = U."id"
+                                            and U."unionId" = $1) as P 
+                                            where "id" = $2`, [union_id, user_id]);
+            res.status(200).json(self);
+        }
+        else if(account_type == "agent") {
+            const data = await supabase.any(`select "upazillaId" from "UnionParishad" where "agentId" = $1`, [user_id]);
+            const upazilla_id = data[0].upazillaId;
+            const self = await supabase.any(`select "name", "points", "rank" 
+                                            from (select "name", "agentId", "points", Rank() over (order by "points" desc) as rank
+                                            from "UnionParishad" where "upazillaId" = $1) as P 
+                                            where "agentId" = $2`, [upazilla_id, user_id]);
+            res.status(200).json(self);
+        }
+        else {
+            res.status(400).json({ error: "Invalid account type" });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 process.on('SIGTERM', gracefulShutdown); // For termination signal
 process.on('SIGINT', gracefulShutdown); // For interrupt signal
 process.on('uncaughtException', gracefulShutdown); // For uncaught exceptions
