@@ -26,23 +26,6 @@ app.listen(PORT, async () => {
       }
 });
 
-const deregisterService = async () => {
-    try {
-      let serviceRegisterUrl =
-        String(process.env.serviceRegistryUrl) + "/deregister";
-      await axios.post(serviceRegisterUrl, { name: process.env.selfName });
-      console.log("Service de-registered successfully");
-    } catch (error) {
-      console.log("Failed to de-register service:", error);
-      process.exit(1);
-    }
-  };
-
-const gracefulShutdown = async () => {
-    await deregisterService();
-    process.exit(0);
-};
-
 app.get('/division', async (req, res) => {
     try {
         const board = await supabase.any(`select "name", "points", Rank() over (order by "points" desc) as rank
@@ -183,6 +166,23 @@ app.post('/user-rank', async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+const deregisterService = async () => {
+    try {
+      let serviceRegisterUrl =
+        String(process.env.serviceRegistryUrl) + "/deregister";
+      await axios.post(serviceRegisterUrl, { name: process.env.selfName });
+      console.log("Service de-registered successfully");
+    } catch (error) {
+      console.log("Failed to de-register service:", error);
+      process.exit(1);
+    }
+  };
+
+const gracefulShutdown = async () => {
+    await deregisterService();
+    process.exit(0);
+};
 
 process.on('SIGTERM', gracefulShutdown); // For termination signal
 process.on('SIGINT', gracefulShutdown); // For interrupt signal
