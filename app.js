@@ -76,7 +76,7 @@ app.post('/union', async (req, res) => {
 app.post('/farmer', async (req, res) => {
     try {
         const { union_id } = req.body;
-        const board = await supabase.any(`select "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
+        const board = await supabase.any(`select "nid", "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
                                           from "Farmer" as F, "User" as U  
                                           where F."id" = U."id"
                                           and U."unionId" = $1`, [union_id]);
@@ -91,7 +91,7 @@ app.post('/farmer', async (req, res) => {
 app.post('/sme', async (req, res) => {
     try {
         const { union_id } = req.body;
-        const board = await supabase.any(`select "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
+        const board = await supabase.any(`select "nid", "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
                                           from "Sme" as S, "User" as U  
                                           where S."id" = U."id"
                                           and U."unionId" = $1`, [union_id]);
@@ -106,7 +106,7 @@ app.post('/sme', async (req, res) => {
 app.post('/vendor', async (req, res) => {
     try {
         const { union_id } = req.body;
-        const board = await supabase.any(`select "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
+        const board = await supabase.any(`select "nid", "name", "avatarLink", "points", Rank() over (order by "points" desc) as rank
                                           from "Vendor" as V, "User" as U  
                                           where V."id" = U."id"
                                           and U."unionId" = $1`, [union_id]);
@@ -122,8 +122,8 @@ app.post('/user-rank', async (req, res) => {
     try {
         const { user_id, account_type, union_id } = req.body;
         if(account_type == "farmer") {
-            const self = await supabase.any(`select "name", "points", "rank" 
-                                            from (select "name", F."id", "points", Rank() over (order by "points" desc) as rank
+            const self = await supabase.any(`select "nid", "name", "points", "rank"
+                                            from (select "nid", "name", F."id", "points", Rank() over (order by "points" desc) as rank
                                             from "Farmer" as F, "User" as U  
                                             where F."id" = U."id"
                                             and U."unionId" = $1) as P 
@@ -131,8 +131,8 @@ app.post('/user-rank', async (req, res) => {
             res.status(200).json(self);
         }
         else if(account_type == "sme") {
-            const self = await supabase.any(`select "name", "points", "rank" 
-                                            from (select "name", S."id", "points", Rank() over (order by "points" desc) as rank
+            const self = await supabase.any(`select "nid", "name", "points", "rank"
+                                            from (select "nid", "name", S."id", "points", Rank() over (order by "points" desc) as rank
                                             from "Sme" as S, "User" as U  
                                             where S."id" = U."id"
                                             and U."unionId" = $1) as P 
@@ -140,8 +140,8 @@ app.post('/user-rank', async (req, res) => {
             res.status(200).json(self);
         }
         else if(account_type == "vendor") {
-            const self = await supabase.any(`select "name", "points", "rank" 
-                                            from (select "name", V."id", "points", Rank() over (order by "points" desc) as rank
+            const self = await supabase.any(`select "nid", "name", "points", "rank"
+                                            from (select "nid", "name", V."id", "points", Rank() over (order by "points" desc) as rank
                                             from "Vendor" as V, "User" as U  
                                             where V."id" = U."id"
                                             and U."unionId" = $1) as P 
