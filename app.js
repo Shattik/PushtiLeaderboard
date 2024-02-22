@@ -80,8 +80,9 @@ app.post('/upazilla', async (req, res) => {
 app.post('/union', async (req, res) => {
     try {
         const { upazilla_id } = req.body;
-        const board = await supabase.any(`select "name", "points", Rank() over (order by "points" desc) as rank
-                                          from "UnionParishad" where "upazillaId" = $1`, [upazilla_id]);
+        const board = await supabase.any(`select U."name", U."points", Rank() over (order by U."points" desc) as rank, A."name" as agentName, A."avatarLink"
+                                          from "UnionParishad" as U, "User" as A where "upazillaId" = $1
+                                          and U."agentId" = A.id`, [upazilla_id]);
         res.status(200).json(board);
     } catch (error) {
         console.log(error);
